@@ -298,6 +298,7 @@ Destroying object with array located at 00FE1D58.
 Destroying object with array located at 00FE0D88.
 
 <br>
+
 No surprises here - this works exactly as we'd expect.  The problem here is in the massive number of wasted computations.  Indeed, to create an object we need to initialize an array of 1000 integers and perform some computations to populate this array.  So, when we step through ```x = SomeClass(5);``` in the second line of ```main()```, we (1) create a new (temporary) object via ```SomeClass(5)```, which involves assigning 1000 locations in memory to particular values, (2) copying these values one-by-one from our temporary object to ```x```, and (3) destroying the temporary object, i.e. deallocating its member array from memory.  It would have been more efficient to (1') create our temporary object via ```SomeClass(5)```, (2') update the *pointer* ```x.m_myIntArray``` to point at the array created in the previous step, and (3') deallocate the memory which ```x.m_myIntArray``` used to point to.  Indeed, we avoid copying 1000 values doing things this way.
 
 
