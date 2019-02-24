@@ -68,7 +68,7 @@ int main()
 }
 ```
 
-When we create `y` we're again performing a shallow copy, so each field of `x` is copied over to `y` exactly.  Thus `y` actually has a copy of the integer pointer contained in `x`, and consequently any changes to `*x.m_myIntPtr` will also affect `*y.m_myIntPtr`.  If we run the example above, 4 lines will be output to the console.  On my machine they were:
+When we create ```y``` we're again performing a shallow copy, so each field of ```x``` is copied over to ```y``` exactly.  Thus ```y``` actually has a copy of the integer pointer contained in ```x```, and consequently any changes to ```*x.m_myIntPtr``` will also affect ```*y.m_myIntPtr```.  If we run the example above, 4 lines will be output to the console.  On my machine they were:
 
 My pointer location is 00A40568 and the integer it points at is 5
 
@@ -78,7 +78,7 @@ My pointer location is 00A40568 and the integer it points at is 7
 
 My pointer location is 00A40568 and the integer it points at is 7
 
-(The pointer location will likely be different each time you run this).  So both objects `x` and `y` share the variable value `*m_myIntPtr` and this will be the case as long as both objects exist.  We can not change the values of `*x.m_myIntPtr` and `*y.m_myIntPtr` independently of each other.  This might sometimes be a desirable thing - but let's assume that this is not the functionality we were hoping for, and that we want to be able to change the integer `y` points to without affecting the one `x` points to.  To pull this off, we'll need to replace the compiler's default copy constructor and copy assignment operators to make *deep* copies.  The following code pulls this off:
+(The pointer location will likely be different each time you run this).  So both objects ```x``` and ```y``` share the variable value ```*m_myIntPtr``` and this will be the case as long as both objects exist.  We can not change the values of ```*x.m_myIntPtr``` and ```*y.m_myIntPtr``` independently of each other.  This might sometimes be a desirable thing - but let's assume that this is not the functionality we were hoping for, and that we want to be able to change the integer ```y``` points to without affecting the one ```x``` points to.  To pull this off, we'll need to replace the compiler's default copy constructor and copy assignment operators to make *deep* copies.  The following code pulls this off:
 
 
 ```C++
@@ -182,9 +182,9 @@ Destroying object with pointer location 0146A3F0
 
 
 <br>
-We see that the first line `BetterCopies x` creates an object with the default constructor.  The second line `x = BetterCopies(5)` first creates an object via `BetterCopies(5)` and then uses the copy assignment operator to copy this new object's fields to `x`.  At the end of this line, the temporary object we just created is destroyed via the destructor.
+We see that the first line ```BetterCopies x``` creates an object with the default constructor.  The second line ```x = BetterCopies(5)``` first creates an object via ```BetterCopies(5)``` and then uses the copy assignment operator to copy this new object's fields to ```x```.  At the end of this line, the temporary object we just created is destroyed via the destructor.
 
-The next line `BetterCopies y = x` uses the copy constructor to create `y` and initialize its values to be (deep) copies of `x`'s values.  The rest of the program is self-explanatory, and of course at the end of `main()` we destroy `x` and `y` via the destructor.
+The next line ```BetterCopies y = x``` uses the copy constructor to create ```y``` and initialize its values to be (deep) copies of ```x```'s values.  The rest of the program is self-explanatory, and of course at the end of ```main()``` we destroy ```x``` and ```y``` via the destructor.
 
 
 
@@ -298,7 +298,7 @@ Destroying object with array located at 00FE1D58.
 Destroying object with array located at 00FE0D88.
 
 <br>
-No surprises here - this works exactly as we'd expect.  The problem here is in the massive number of wasted computations.  Indeed, to create an object we need to initialize an array of 1000 integers and perform some computations to populate this array.  So, when we step through `x = SomeClass(5);` in the second line of `main()`, we (1) create a new (temporary) object via `SomeClass(5)`, which involves assigning 1000 locations in memory to particular values, (2) copying these values one-by-one from our temporary object to `x`, and (3) destroying the temporary object, i.e. deallocating its member array from memory.  It would have been more efficient to (1') create our temporary object via `SomeClass(5)`, (2') update the *pointer* `x.m_myIntArray` to point at the array created in the previous step, and (3') deallocate the memory which `x.m_myIntArray` used to point to.  Indeed, we avoid copying 1000 values doing things this way.
+No surprises here - this works exactly as we'd expect.  The problem here is in the massive number of wasted computations.  Indeed, to create an object we need to initialize an array of 1000 integers and perform some computations to populate this array.  So, when we step through ```x = SomeClass(5);``` in the second line of ```main()```, we (1) create a new (temporary) object via ```SomeClass(5)```, which involves assigning 1000 locations in memory to particular values, (2) copying these values one-by-one from our temporary object to ```x```, and (3) destroying the temporary object, i.e. deallocating its member array from memory.  It would have been more efficient to (1') create our temporary object via ```SomeClass(5)```, (2') update the *pointer* ```x.m_myIntArray``` to point at the array created in the previous step, and (3') deallocate the memory which ```x.m_myIntArray``` used to point to.  Indeed, we avoid copying 1000 values doing things this way.
 
 
 ```C++
