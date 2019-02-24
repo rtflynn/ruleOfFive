@@ -188,7 +188,7 @@ The next line `BetterCopies y = x` uses the copy constructor to create `y` and i
 
 
 
-For quick reference, the important syntax is:
+For quick reference, the syntax for these functions is:
 
 ```C++
 class myClass
@@ -200,8 +200,11 @@ class myClass
 }
 ```
 
+Quick note:  the const is necessary for the copy assignment operator.
 
 
+## The Rule of Three
+The Rule of Three states that if a class has a custom copy constructor, copy assignment operator, or custom destructor, then it should have all three.  This is justified by the fact that if any of these functions is required, then this probably means that the class involves pointers and/or dynamically allocated memory, and therefore needs its own deep copy/assignment to avoid the problem described above and its own destructor to prevent memory leaks.
 
 
 
