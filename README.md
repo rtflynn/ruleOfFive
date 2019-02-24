@@ -191,12 +191,12 @@ The next line `BetterCopies y = x` uses the copy constructor to create `y` and i
 For quick reference, the syntax for these functions is:
 
 ```C++
-class myClass
+class MyClass
 {
-  myClass(some params) {   .....   }    // Constructor
-  myClass& operator=(const myClass& someObject) {  .....  }   // Copy assignment
-  myClass(const myClass& someObject) {  .....  }  // Copy constructor
-  ~myClass() {  .....  }  // Destructor
+  MyClass(some params) {   .....   }    // Constructor
+  MyClass& operator=(const MyClass& someObject) {  .....  }   // Copy assignment
+  MyClass(const MyClass& someObject) {  .....  }  // Copy constructor
+  ~MyClass() {  .....  }  // Destructor
 }
 ```
 
@@ -207,9 +207,98 @@ Quick note:  the const is necessary for the copy assignment operator.
 The Rule of Three states that if a class has a custom copy constructor, copy assignment operator, or custom destructor, then it should have all three.  This is justified by the fact that if any of these functions is required, then this probably means that the class involves pointers and/or dynamically allocated memory, and therefore needs its own deep copy/assignment to avoid the problem described above and its own destructor to prevent memory leaks.
 
 
+## Move Semantics
+Consider the code:
+
+```C++
+
+class SomeClass
+{
+public:
+	int * m_myIntArray;
+	SomeClass(int x = 0)
+	{
+		m_myIntArray = new int[1000];
+		for (int i = 0; i < 1000; i++)
+			m_myIntArray[i] = i + x;
+		
+		std::cout << "Constructing object with array located at " << m_myIntArray << "." << std::endl;
+	}
+
+	SomeClass& operator=(const SomeClass& original)
+	{
+		if (this != &original)
+		{
+			for (int i = 0; i < 1000; i++)
+				m_myIntArray[i] = original.m_myIntArray[i];
+
+			std::cout << "Copy-assigning object with array located at " << m_myIntArray << ".  The original object has array with location " 
+				<< original.m_myIntArray << "." << std::endl;
+		}
+		return *this;
+	}
+
+	SomeClass(const SomeClass& original)
+	{
+		m_myIntArray = new int[1000];
+		for (int i = 0; i < 1000; i++)
+			m_myIntArray[i] = original.m_myIntArray[i];
+
+		std::cout << "Copy-constructing object with array located at " << m_myIntArray << ".  The original object has array with location " 
+			<< original.m_myIntArray << "." << std::endl;
+	}
+
+	~SomeClass()
+	{
+		std::cout << "Destroying object with array located at " << m_myIntArray << "." << std::endl;
+		delete[] m_myIntArray;
+	}
+
+	void saySomething()
+	{
+		std::cout << "My integer array is located at " << m_myIntArray << " and the first few values stored there are " << m_myIntArray[0] << ", "
+			<< m_myIntArray[1] << ", " << m_myIntArray[2] << "." << std::endl;
+	}
+};
 
 
 
+int main()
+{
+	SomeClass x;
+	x = SomeClass(5);
+	
+	SomeClass y = x;
+
+	x.saySomething();
+	y.saySomething();
+
+	return 1;
+}
+```
+
+This code generates the following console output on my machine:
+
+Constructing object with array located at 00FE0D88.
+
+Constructing object with array located at 00FE1D58.
+
+Copy-assigning object with array located at 00FE0D88.  The original object has array with location 00FE1D58.
+
+Destroying object with array located at 00FE1D58.
+
+Copy-constructing object with array located at 00FE1D58.  The original object has array with location 00FE0D88.
+
+My integer array is located at 00FE0D88 and the first few values stored there are 5, 6, 7.
+
+My integer array is located at 00FE1D58 and the first few values stored there are 5, 6, 7.
+
+Destroying object with array located at 00FE1D58.
+
+Destroying object with array located at 00FE0D88.
+
+<br>
+No surprises here - this works exactly as we'd expect.  The problem here is in the massive number of wasted computations.  Indeed, to create an object we need to initialize an array of 1000 integers and perform some computations to populate this array.  So, when we step through `x = SomeClass(5);` in the second line of `main()`, we (1) create a new (temporary) object via `SomeClass(5)`, which involves assigning 1000 locations in memory to particular values, (2) copying these values one-by-one from our temporary object to `x`, and (3) destroying the temporary object, i.e. deallocating its member array from memory.  It would have been more efficient to (1') create our temporary object via `SomeClass(5)`, (2') update the *pointer* `x.m_myIntArray` to point at the array created in the previous step, and (3') deallocate the memory which `x.m_myIntArray` used to point to.  Indeed, we avoid copying 1000 values doing things this way.
 
 
 ```C++
