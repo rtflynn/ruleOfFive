@@ -89,6 +89,7 @@ class BetterCopies
   {
     m_myIntPtr = new int;
     *m_myIntPtr = someInt;
+    
     std::cout << "Using the constructor to create an object... "
 			<< "The new object's pointer location is " << m_myIntPtr
 			<< " and the value it points to is " << *m_myIntPtr << "." << std::endl;
@@ -98,6 +99,7 @@ class BetterCopies
   {
     m_myIntPtr = new int;
     *m_myIntPtr = *original.m_myIntPtr;
+    
     std::cout << "Using the copy constructor to create an object... " 
             << "The new object's pointer location is " << m_myIntPtr 
             << " and the value it points at is " << *m_myIntPtr << "." << std::endl;
@@ -112,6 +114,7 @@ class BetterCopies
     {
         m_myIntPtr = new int;
         *m_myIntPtr = *original.m_myIntPtr;
+	
         std::cout << "Using the copy assignment operator to create an object... " 
             << "The new object's pointer location is " << m_myIntPtr 
             << " and the value it points at is " << *m_myIntPtr << "." << std::endl;
@@ -125,6 +128,7 @@ class BetterCopies
   ~BetterCopies()         // Destructor
   {
   std::cout << "Destroying object with pointer location " << m_myIntPtr << std::endl;
+  
   delete m_myIntPtr;
   m_myIntPtr = nullptr;
   }
@@ -148,6 +152,44 @@ int main()
   return 1;
 }
 ```
+
+
+On my machine this program produced the following console output:
+
+
+Using the constructor to create an object... The new object's pointer location is 016F97E0 and the value it points to is 0.
+
+Using the constructor to create an object... The new object's pointer location is 016F9BB0 and the value it points to is 5.
+
+Using the copy assignment operator to create an object... The new object's pointer location is 016F6728 and the value it points at is 5.
+
+The original object had location 016F9BB0 and value 5.
+
+Destroying object with pointer location 016F9BB0
+
+Using the copy constructor to create an object... The new object's pointer location is 016F6758 and the value it points at is 5.
+
+The original object had location 016F6728 and value 5.
+
+My pointer location is 016F6728 and the integer it points at is 5
+
+My pointer location is 016F6758 and the integer it points at is 5
+
+My pointer location is 016F6728 and the integer it points at is 5
+
+My pointer location is 016F6758 and the integer it points at is 7
+
+Destroying object with pointer location 016F6758
+
+Destroying object with pointer location 016F6728
+
+
+
+
+We see that the first line `BetterCopies x` creates an object with the default constructor.  The second line `x = BetterCopies(5)` first creates an object via `BetterCopies(5)` and then uses the copy assignment operator to copy this new object's fields to `x`.  At the end of this line, the temporary object we just created is destroyed via the destructor.
+
+The next line `BetterCopies y = x` uses the copy constructor to create `y` and initialize its values to be (deep) copies of `x`'s values.  The rest of the program is self-explanatory, and of course at the end of `main()` we destroy `x` and `y` via the destructor.
+
 
 
 For quick reference, the important syntax is:
