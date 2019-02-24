@@ -115,7 +115,7 @@ class BetterCopies
         m_myIntPtr = new int;
         *m_myIntPtr = *original.m_myIntPtr;
 	
-        std::cout << "Using the copy assignment operator to create an object... " 
+        std::cout << "Using the copy assignment operator to assign values to an object... " 
             << "The new object's pointer location is " << m_myIntPtr 
             << " and the value it points at is " << *m_myIntPtr << "." << std::endl;
             
@@ -161,7 +161,7 @@ Using the constructor to create an object... The new object's pointer location i
 
 Using the constructor to create an object... The new object's pointer location is 016F9BB0 and the value it points to is 5.
 
-Using the copy assignment operator to create an object... The new object's pointer location is 016F6728 and the value it points at is 5.
+Using the copy assignment operator to assign values to an object... The new object's pointer location is 016F6728 and the value it points at is 5.
 
 The original object had location 016F9BB0 and value 5.
 
