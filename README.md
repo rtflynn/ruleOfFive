@@ -111,8 +111,7 @@ class BetterCopies
   BetterCopies& operator=(const BetterCopies& original)   // Copy Assignment
   {
     if (this != &original)
-    {
-        m_myIntPtr = new int;
+    {       
         *m_myIntPtr = *original.m_myIntPtr;
 	
         std::cout << "Using the copy assignment operator to assign values to an object... " 
@@ -157,31 +156,30 @@ int main()
 On my machine this program produced the following console output:
 
 
-Using the constructor to create an object... The new object's pointer location is 016F97E0 and the value it points to is 0.
+Using the constructor to create an object... The new object's pointer location is 0146A3F0 and the value it points to is 0.
 
-Using the constructor to create an object... The new object's pointer location is 016F9BB0 and the value it points to is 5.
+Using the constructor to create an object... The new object's pointer location is 01465A68 and the value it points to is 5.
 
-Using the copy assignment operator to assign values to an object... The new object's pointer location is 016F6728 and the value it points at is 5.
+Using the copy assignment operator to assign values to an object... The new object's pointer location is 0146A3F0 and the value it points at is 5.
 
-The original object had location 016F9BB0 and value 5.
+The original object had location 01465A68 and value 5.
 
-Destroying object with pointer location 016F9BB0
+Destroying object with pointer location 01465A68
 
-Using the copy constructor to create an object... The new object's pointer location is 016F6758 and the value it points at is 5.
+Using the copy constructor to create an object... The new object's pointer location is 01465A68 and the value it points at is 5.
+The original object had location 0146A3F0 and value 5.
 
-The original object had location 016F6728 and value 5.
+My pointer location is 0146A3F0 and the integer it points at is 5
 
-My pointer location is 016F6728 and the integer it points at is 5
+My pointer location is 01465A68 and the integer it points at is 5
 
-My pointer location is 016F6758 and the integer it points at is 5
+My pointer location is 0146A3F0 and the integer it points at is 5
 
-My pointer location is 016F6728 and the integer it points at is 5
+My pointer location is 01465A68 and the integer it points at is 7
 
-My pointer location is 016F6758 and the integer it points at is 7
+Destroying object with pointer location 01465A68
 
-Destroying object with pointer location 016F6758
-
-Destroying object with pointer location 016F6728
+Destroying object with pointer location 0146A3F0
 
 
 
