@@ -161,7 +161,6 @@ Using the constructor to create an object... The new object's pointer location i
 Using the constructor to create an object... The new object's pointer location is 01465A68 and the value it points to is 5.
 
 Using the copy assignment operator to assign values to an object... The new object's pointer location is 0146A3F0 and the value it points at is 5.
-
 The original object had location 01465A68 and value 5.
 
 Destroying object with pointer location 01465A68
@@ -182,8 +181,7 @@ Destroying object with pointer location 01465A68
 Destroying object with pointer location 0146A3F0
 
 
-
-
+<br>
 We see that the first line `BetterCopies x` creates an object with the default constructor.  The second line `x = BetterCopies(5)` first creates an object via `BetterCopies(5)` and then uses the copy assignment operator to copy this new object's fields to `x`.  At the end of this line, the temporary object we just created is destroyed via the destructor.
 
 The next line `BetterCopies y = x` uses the copy constructor to create `y` and initialize its values to be (deep) copies of `x`'s values.  The rest of the program is self-explanatory, and of course at the end of `main()` we destroy `x` and `y` via the destructor.
