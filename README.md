@@ -1,4 +1,4 @@
-# Brief intro to the Rule of Five
+# Brief Introduction to the Rule of Five
 
 ## Shallow Copies
 
@@ -203,7 +203,7 @@ class MyClass
 Quick note:  the const is necessary for the copy assignment operator.
 
 
-## The Rule of Three
+### The Rule of Three
 The Rule of Three states that if a class has a custom copy constructor, copy assignment operator, or custom destructor, then it should have all three.  This is justified by the fact that if any of these functions is required, then this probably means that the class involves pointers and/or dynamically allocated memory, and therefore needs its own deep copy/assignment to avoid the problem described above and its own destructor to prevent memory leaks.
 
 
@@ -301,12 +301,137 @@ Destroying object with array located at 00FE0D88.
 
 No surprises here - this works exactly as we'd expect.  The problem here is in the massive number of wasted computations.  Indeed, to create an object we need to initialize an array of 1000 integers and perform some computations to populate this array.  So, when we step through ```x = SomeClass(5);``` in the second line of ```main()```, we (1) create a new (temporary) object via ```SomeClass(5)```, which involves assigning 1000 locations in memory to particular values, (2) copying these values one-by-one from our temporary object to ```x```, and (3) destroying the temporary object, i.e. deallocating its member array from memory.  It would have been more efficient to (1') create our temporary object via ```SomeClass(5)```, (2') update the *pointer* ```x.m_myIntArray``` to point at the array created in the previous step, and (3') deallocate the memory which ```x.m_myIntArray``` used to point to.  Indeed, we avoid copying 1000 values doing things this way.
 
+We encounter the same problem each time we write a line of code like ```SomeClass x = someFunctionWhichReturnsSomeClassObj(some params);``` .  That is, ```x``` is created, as well as a temporary object to store the return value of the function, and then all the values are copied from our temporary object to ```x```.   What we'd like to do instead is build our temporary object and simply transfer its pointer to x; this doesn't work, though, because our temporary object is an rvalue, which will therefore be destroyed once the program has stepped past the expression it appeared in.  The solution (introduced in C++ 11) is to create an 'rvalue reference', which extends the lifetime of the rvalue to the scope of the rvalue reference, and allows us to make changes to the rvalue.  
+
+There are many excellent sources out there which explain the differences between lvalues, rvalues, lvalue and rvalue references, move semantics, etc, and it actually can get a bit involved.  Rather than recreate a full explanation here, I think it will be more instructive to *show* move semantics in action, and to refer the interested reader to the explanation at https://www.learncpp.com/cpp-tutorial/15-2-rvalue-references/ .
+
 
 ```C++
-int main() {}
+class MyClass			
+{
+public:
+	int * myPtr;
+
+	// Constructor, destructor, copy constructor, and copy assignment operator defined as usual.
+	
+	MyClass(int x = 0)
+	{
+		myPtr = new int;
+		*myPtr = x;
+		std::cout << "Using the usual constructor with value " << x << "." << std::endl;
+	}
+
+	~MyClass()
+	{
+		delete myPtr;
+		myPtr = nullptr;
+		std::cout << "Destroying object..." << std::endl;
+	}
+
+	MyClass(const MyClass& other)
+	{
+		myPtr = new int;
+		*myPtr = *other.myPtr;
+		std::cout << "Using the copy constructor." << std::endl;
+	}
+
+	MyClass& operator=(const MyClass& other)
+	{
+		if (this != &other) 
+		{
+			*myPtr = *other.myPtr;
+			std::cout << "Using the copy assignment operator." << std::endl;
+		}
+	}
+
+	// Move constructor and move assignment operator take rvalue references. Syntax for such a reference is T&&, where T is the class name.
+	
+	MyClass(MyClass&& other)		
+	{
+		myPtr = other.myPtr;
+		other.myPtr = nullptr;
+		std::cout << "Using the move constructor." << std::endl;
+	}
+
+	MyClass& operator=(MyClass&& other)
+	{
+		if (&other == this)
+			return *this;
+
+		delete myPtr;			// Delete any resources we're holding onto before transferring ownership from 'other' to 'this'.
+		myPtr = other.myPtr;
+		other.myPtr = nullptr;
+
+		std::cout << "Using the move assignment operator." << std::endl;
+
+		return *this;
+	}
+
+	void describeSelf()
+	{
+		std::cout << "My pointer is " << myPtr << " and the value stored there is " << *myPtr << "." << std::endl;
+	}
+};
+
+
+MyClass createObj(int x)
+{
+	MyClass someObject = myClass(x);
+	return someObject;
+}
+
+int main()
+{
+	MyClass x;
+	x = createObj(42);
+
+	MyClass y(createObj(30));
+	return 1;
+}
+
+
 ```
 
+<br> 
 
+The console output for this program looks like:
+
+Using the usual constructor with value 0.
+
+Using the usual constructor with value 42.
+
+Using the move constructor.
+
+Destroying object...
+
+Using the move assignment operator.
+
+Destroying object...
+
+Using the usual constructor with value 30.
+
+Using the move constructor.
+
+Destroying object...
+
+Destroying object...
+
+Destroying object...
+
+<br>
+
+
+The first line calls the default constructor as expected.  The second line begins to show the advantage of using move semantics:  ```x = createObj(42)``` would usually involve a lot of unnecessary copying as described above.  First, in the first line of ```createObj(42)```, the default constructor is called to create an object with parameter 42, and then the move constructor is used to transfer this temporary object to the return value of the ```createObj``` function (so, we've already avoided a potentially expensive copy).  Back in the second line of ```main()```, we perform a move assignment operation to transfer the contents of the temporary object to ```x``` - without making a copy (!).  The line ```MyClass y(createObj(30))``` runs similarly.  Of course, our class here contained only a pointer so this did not save us any operations.  But if this class contained (say) a large dynamically-allocated array or a long std::vector, the savings would be quite noticable.  This savings becomes more profound the more "move"s are used, so that (for example) a sorting algorithm which relies on swapping objects many times can be done enormously quicker with move semantics than with copy semantics.
+
+
+
+<br>
+
+<br>
+
+<br>
+
+Suggestions and corrections are always very welcome!
 
 
 
